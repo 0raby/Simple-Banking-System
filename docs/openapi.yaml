@@ -1,0 +1,319 @@
+openapi: 3.0.0
+info:
+  title: Account API
+  version: 1.0.0
+
+paths:
+  /api/accounts:
+    get:
+      summary: Get all accounts
+      operationId : getAllAccounts
+      x-eov-operation-handler: account
+      tags: [Accounts]
+      responses:
+        200:
+          description: List of all accounts
+        400:
+          description: Error in getting all accounts
+
+    post:
+      summary: Create a new account
+      tags: [Accounts]
+      operationId : createAccount
+      x-eov-operation-handler: account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                nationalID:
+                  type: string
+                balance:
+                  type: string
+              required: [name, nationalID]
+              example:
+                name: newUser1
+                nationalID: '1234'
+      responses:
+        201:
+          description: Account created
+          content:
+            application/json:
+              example:
+                  newAccount:
+                    name: newUser1
+                    creditCardNo: "1589601820141629"
+                    cvv: "535"
+                    expDate: "07/26"
+                    balance: 1500
+        400:
+          description: Bad request
+          content:
+            application/json:
+              example:
+                message: (error message)
+  /api/accounts/{id}:
+    get:
+      summary: Get a single account by ID
+      tags: [Accounts]
+      operationId : getAccount
+      x-eov-operation-handler: account
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: UUID of the account
+          schema:
+            type: string
+            example: 7c83a81b-b302-4d1c-9898-bc65013e42cf
+      responses:
+        200:
+          description: Account found
+          content:
+            application/json:
+              example:
+                account:
+                  id: "7c83a81b-b302-4d1c-9898-bc65013e42cf"
+                  name: "test2"
+                  balance: 1260
+                  creditCardNumber: "****-****-****-0410"
+        404:
+          description: Account not found
+          content:
+            application/json:
+              example:
+                message: Account not found
+    patch:
+      summary: Update an existing account by ID
+      tags: [Accounts]
+      operationId: updateAccount
+      x-eov-operation-handler: account
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: UUID of the account
+          schema:
+            type: string
+            example: 7c83a81b-b302-4d1c-9898-bc65013e42cf
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              example:
+                name: updatedUser
+      responses:
+        '200':
+          description: Account updated
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                updated_Account: 
+                  id: "7c83a81b-b302-4d1c-9898-bc65013e42cf"
+                  name: "testing UPdate"
+                  balance: 1260
+                  maskedCreditCardNo: "****-****-****-0410"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Invalid input
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Account not found
+    delete:
+      summary: Delete an account by ID
+      tags: [Accounts]
+      operationId: deleteAccount
+      x-eov-operation-handler: account
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: UUID of the account
+          schema:
+            type: string
+            example: 7c83a81b-b302-4d1c-9898-bc65013e42cf
+      responses:
+        204:
+          description: Account deleted successfully
+        404:
+          description: Account not found
+          content:
+            application/json:
+              example:
+                status: fail
+                message: Account not found
+  /api/transactions/{id}:
+    get:
+      summary: Get all transactions for one account
+      tags:
+        - Transactions
+      operationId: getAccountTransactions
+      x-eov-operation-handler: transaction
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: UUID of the account
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Account's Transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stats:
+                    type: object
+                    properties:
+                      totalTransactions:
+                        type: integer
+                        example: 3
+                  transactions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: 91b72cfa-41d0-4b14-a0d1-ecaa5c53ad3f
+                        amount:
+                          type: number
+                          example: 250.0
+                        type:
+                          type: string
+                          enum: [deposit, withdrawal, transfer]
+                          example: deposit
+                        date:
+                          type: string
+                          format: date-time
+                          example: 2025-07-17T14:00:00Z
+              example:
+                stats:
+                  totalTransactions: 3
+                  totalAmount: 950.00
+                transactions:
+                  - id: "91b72cfa-41d0-4b14-a0d1-ecaa5c53ad3f"
+                    amount: 250.0
+                    type: deposit
+                    date: 2025-07-17T14:00:00Z
+                  - id: "83e91d2c-2d9d-45df-b5b6-b899d53fd84b"
+                    amount: 300.0
+                    type: withdrawal
+                    date: 2025-07-15T10:30:00Z
+                  - id: "2d0c3b84-6e57-4fd6-bd12-dc38cc3c5e2f"
+                    amount: 400.0
+                    type: transfer
+                    date: 2025-07-14T09:00:00Z
+        400:
+          description: Account not found or invalid UUID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account not found or invalid UUID
+    
+
+    post:
+      summary: Create a transaction (transfer, deposit, withdrawal)
+      operationId : createTransaction
+      x-eov-operation-handler: transaction
+      tags:
+        - Transactions
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: UUID of the initiating account
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - type
+              properties:
+                toAccount:
+                  type: string
+                  format: uuid
+                amount:
+                  type: number
+                  minimum: 10
+                type:
+                  type: string
+                  enum: [TRANSFER, DEPOSIT, WITHDRAWAL]
+      responses:
+        '201':
+          description: Transaction complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      transaction:
+                        type: object
+                  message:
+                    type: string
+                    example: Transaction complete
+        '400':
+          description: Validation error or transaction failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found / invalid accounts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: fail
+        message:
+          type: string
+          example: Error message
