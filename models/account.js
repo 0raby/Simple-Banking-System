@@ -5,7 +5,7 @@ const accountSchema = new mongoose.Schema(
   {
     id: {
       type: String,
-      default: uuidv4(),
+      default: uuidv4,
       unique: true,
     },
     name: {
@@ -50,17 +50,11 @@ const accountSchema = new mongoose.Schema(
     },
     balance: {
       type: Number,
-      default: 1500,
+      default: 0,
     },
     nationalID: {
       type: String,
       required: [true, 'Please enter your nationalID'],
-      validate: {
-        validator: function (val) {
-          return /^\d{4}$/.test(val);
-        },
-        message: 'National ID need to be 4 digits(for testing)',
-      },
       unique: true,
     },
   },

@@ -147,12 +147,13 @@ exports.findBankingStats = async (uuid) => {
     },
     {
       $group: {
-        _id: '$type',
+        _id: null,
         numberOfTransactions: { $sum: 1 },
         transactions: {
           $push: {
             fromAccount: '$fromAccount',
             toAccount: '$toAccount',
+            type: '$type',
             amount: '$amount',
             createdAt: '$createdAt',
           },
@@ -163,7 +164,6 @@ exports.findBankingStats = async (uuid) => {
     {
       $project: {
         _id: 0,
-        type: '$_id',
         numberOfTransactions: 1,
         transactions: 1,
       },

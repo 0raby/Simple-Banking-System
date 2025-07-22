@@ -6,7 +6,9 @@ const path = require('path');
 // const accountRoutes = require('./routes/account');
 // const transactionRoutes = require('./routes/transaction');
 const YAML = require('yamljs');
-const swaggerSpec = YAML.load('./docs/openapi.yaml');
+const apiSpec = path.join(__dirname, 'docs/openapi.yaml');
+const swaggerSpec = YAML.load(apiSpec);
+
 const AppError = require('./utils/AppError');
 const OpenApiValidator = require('express-openapi-validator');
 const globalErrorHandler = require('./controllers/error');
@@ -21,6 +23,8 @@ if (process.env.NODE_ENV === 'development') {
 
 //ROUTES
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.use(
   OpenApiValidator.middleware({
     apiSpec: './docs/openapi.yaml',
@@ -32,7 +36,6 @@ app.use(
 // app.use('/api/accounts/', accountRoutes);
 // app.use('/api/transactions/', transactionRoutes);
 //for swagger
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

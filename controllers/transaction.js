@@ -84,10 +84,19 @@ exports.createTransaction = catchAsync(async (req, res, next) => {
       );
     }, session);
   }
-
-  return res.status(201).json({
-    data: { transaction },
-  });
+  // "transaction": {
+  //       "fromAccount": "5a2f9d98-7e07-4732-b19b-6caccee430c8",
+  //       "amount": 2000,
+  //       "type": "WITHDRAWAL",
+  //       "_id": "687e368e39d3fa2ee07f0600",
+  //       "id": "56c8add9-2976-44d5-89f3-d4cd1d507a7c",
+  //       "createdAt": "2025-07-21T12:46:06.909Z",
+  //       "__v": 0
+  //   }
+  const { id, fromAccount, toAccount, type, createdAt } = transaction;
+  return res
+    .status(201)
+    .json({ id, fromAccount, toAccount, type, amount, createdAt });
 });
 
 exports.getAccountTransactions = catchAsync(async (req, res, next) => {
@@ -103,6 +112,7 @@ exports.getAccountTransactions = catchAsync(async (req, res, next) => {
     );
   }
   const stats = await transactionService.findBankingStats(uuid);
+  const { numberOfTransactions, transactions } = stats[0];
 
-  res.status(200).json({ stats });
+  res.status(200).json({ UserId: uuid, numberOfTransactions, transactions });
 });

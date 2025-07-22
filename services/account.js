@@ -2,6 +2,7 @@ const Account = require('../models/account');
 const APIFeatures = require('../utils/APIFeatures');
 const accountRepo = require('../Repositories/account');
 const AppError = require('./../utils/AppError');
+const createNewCard = require('./../utils/createNewCreditCard');
 
 exports.getAllAccounts = async (query) => {
   const features = new APIFeatures(accountRepo.findAll(), query)
@@ -10,7 +11,7 @@ exports.getAllAccounts = async (query) => {
     .limitFields()
     .paginate();
 
-  const accounts = await features.query;
+  const accounts = await features.query.select('-expDate -cvv');
   return accounts;
 };
 
@@ -31,32 +32,25 @@ exports.getAccountById = async (uuid) => {
 };
 
 exports.createAccount = async (name1, nationalID) => {
-  const randomNumberForCreditCard = Math.floor(1e15 + Math.random() * 9e15);
-  const newCreditCardNo = randomNumberForCreditCard.toString();
-  const randomThreeDigit = Math.floor(100 + Math.random() * 900);
-  const newCvv = randomThreeDigit.toString();
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const nextYear = String((now.getFullYear() + 1) % 100).padStart(2, '0');
-  const newExpDate = `${month}/${nextYear}`;
+  const newCard = createNewCard();
 
   const newAccount = await accountRepo.createAccount({
     name: name1,
     nationalID,
-    creditCardNo: newCreditCardNo,
-    cvv: newCvv,
-    expDate: newExpDate,
+    creditCardNo: newCard.CreditCardNo,
+    cvv: newCard.Cvv,
+    expDate: newCard.ExpDate,
   });
 
-  const { name, creditCardNo, cvv, expDate, balance } = newAccount;
-  return { name, creditCardNo, cvv, expDate, balance };
+  const { id, name, creditCardNo, cvv, expDate, balance } = newAccount;
+  return { id, name, creditCardNo, cvv, expDate, balance };
 };
 
 exports.updateAccount = async (uuid, updatedname) => {
   const updatedAccount = await accountRepo.updateAccount(uuid, updatedname);
 
   if (!updatedAccount) {
-    return next(new AppError('no account found to update', 404));
+    throw new AppError('no account found to update', 404);
   }
   const { id, name, balance, maskedCreditCardNo } = updatedAccount;
   return { id, name, balance, maskedCreditCardNo };

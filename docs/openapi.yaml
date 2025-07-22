@@ -33,11 +33,11 @@ paths:
                 nationalID:
                   type: string
                 balance:
-                  type: string
+                  type: number
               required: [name, nationalID]
               example:
                 name: newUser1
-                nationalID: '1234'
+                nationalID: '29907011203451'
       responses:
         201:
           description: Account created
@@ -49,7 +49,7 @@ paths:
                     creditCardNo: "1589601820141629"
                     cvv: "535"
                     expDate: "07/26"
-                    balance: 1500
+                    balance: 0
         400:
           description: Bad request
           content:

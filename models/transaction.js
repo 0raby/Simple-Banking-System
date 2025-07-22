@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const transactionSchema = new mongoose.Schema({
   id: {
     type: String,
-    default: uuidv4(),
+    default: uuidv4,
     unique: true,
   },
   fromAccount: {

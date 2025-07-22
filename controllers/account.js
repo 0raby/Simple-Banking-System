@@ -3,14 +3,14 @@ const APIFeatures = require('../utils/APIFeatures');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 const accountService = require('../services/account');
+const VeryifyID = require('./../utils/VerifyEgyptianID');
 const { isUUID } = require('validator');
 
 exports.getAllAccounts = catchAsync(async (req, res) => {
-  const accounts = await accountService.getAllAccounts(req.query);
+  let accounts = await accountService.getAllAccounts(req.query);
 
   res.status(200).json({
     results: accounts.length,
-
     accounts,
   });
 });
@@ -19,15 +19,17 @@ exports.getAccount = catchAsync(async (req, res, next) => {
 
   const account = await accountService.getAccountById(uuid);
 
-  res.status(200).json({ account });
+  res.status(200).json(account);
 });
 
 exports.createAccount = catchAsync(async (req, res, next) => {
   const { name, nationalID } = req.body;
 
+  VeryifyID(nationalID);
+
   const newAccount = await accountService.createAccount(name, nationalID);
   //new Account ={name, creditcardno, cvv, exp date, balance}
-  res.status(201).json({ newAccount });
+  res.status(201).json(newAccount);
 });
 
 exports.updateAccount = catchAsync(async (req, res, next) => {
@@ -41,12 +43,7 @@ exports.updateAccount = catchAsync(async (req, res, next) => {
   //   next(new AppError('You can only update the name, so please enter it', 400));
   // }
   const updatedAccount = await accountService.updateAccount(uuid, name);
-  res.status(200).json({
-    status: 'success',
-    data: {
-      updated_Account: updatedAccount,
-    },
-  });
+  res.status(200).json({ updatedAccount });
 });
 
 exports.deleteAccount = catchAsync(async (req, res, next) => {
